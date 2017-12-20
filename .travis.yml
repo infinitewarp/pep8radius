@@ -1,15 +1,13 @@
 language: python
 
 python:
-    - "2.6"
     - "2.7"
     - "pypy"
-    - "3.2"
-    - "3.3"
     - "3.4"
+    - "3.5"
+    - "3.6"
 
 install:
-    - if [ "$TRAVIS_PYTHON_VERSION" == "2.6" ]; then pip --quiet install argparse unittest2; fi
     - python setup.py install --quiet
     - pip install --quiet pytest-cov
     - git config --global user.email "you@example.com"
