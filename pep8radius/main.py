@@ -21,11 +21,11 @@ DEFAULT_IGNORE = 'E24'
 DEFAULT_INDENT_SIZE = 4
 
 if sys.platform == 'win32':  # pragma: no cover
-    DEFAULT_CONFIG = os.path.expanduser(r'~\.pep8')
+    DEFAULT_CONFIG = os.path.expanduser(r'~\.yapf\style')
 else:
     DEFAULT_CONFIG = os.path.join(os.getenv('XDG_CONFIG_HOME') or
-                                  os.path.expanduser('~/.config'), 'pep8')
-PROJECT_CONFIG = ('setup.cfg', 'tox.ini', '.pep8')
+                                  os.path.expanduser('~/.config/yapf'), 'style')
+PROJECT_CONFIG = ('setup.cfg', '.style.yapf')
 
 
 def main(args=None, vc=None, cwd=None, apply_config=False):
@@ -52,12 +52,6 @@ def main(args=None, vc=None, cwd=None, apply_config=False):
             args_set = args  # args is a Namespace
         if '--version' in args_set or getattr(args_set, 'version', 0):
             print(version)
-            return 0
-        if '--list-fixes' in args_set or getattr(args_set, 'list_fixes', 0):
-            from autopep8 import supported_fixes
-            for code, description in sorted(supported_fixes()):
-                print('{code} - {description}'.format(
-                    code=code, description=description))
             return 0
 
         try:
@@ -123,41 +117,11 @@ def create_parser():
     parser.add_argument('-v', '--verbose', action='count', dest='verbose',
                         default=0,
                         help='print verbose messages; '
-                        'multiple -v result in more verbose messages '
-                        '(one less -v is passed to autopep8)')
+                        'multiple -v result in more verbose messages')
     parser.add_argument('--from-diff', type=FileType('r'), metavar='DIFF',
                         help="Experimental: rather than calling out to version"
                              " control, just pass in a diff; "
                              "the modified lines will be fixed")
-
-    ap = parser.add_argument_group('pep8', 'Pep8 options to pass to autopep8.')
-    ap.add_argument('-p', '--pep8-passes', metavar='n',
-                    default=-1, type=int,
-                    help='maximum number of additional pep8 passes '
-                    '(default: infinite)')
-    ap.add_argument('-a', '--aggressive', action='count', default=0,
-                    help='enable non-whitespace changes; '
-                    'multiple -a result in more aggressive changes')
-    ap.add_argument('--experimental', action='store_true',
-                    help='enable experimental fixes')
-    ap.add_argument('--exclude', metavar='globs',
-                    help='exclude file/directory names that match these '
-                    'comma-separated globs')
-    ap.add_argument('--list-fixes', action='store_true',
-                    help='list codes for fixes and exit; '
-                    'used by --ignore and --select')
-    ap.add_argument('--ignore', metavar='errors', default='',
-                    help='do not fix these errors/warnings '
-                    '(default: {0})'.format(DEFAULT_IGNORE))
-    ap.add_argument('--select', metavar='errors', default='',
-                    help='fix only these errors/warnings (e.g. E4,W)')
-    ap.add_argument('--max-line-length', metavar='n', default=79, type=int,
-                    help='set maximum allowed line length '
-                    '(default: %(default)s)')
-    ap.add_argument('--indent-size', default=DEFAULT_INDENT_SIZE,
-                    type=int, metavar='n',
-                    help='number of spaces per indent level '
-                    '(default %(default)s)')
 
     df = parser.add_argument_group('docformatter',
                                    'Fix docstrings for PEP257.')
@@ -188,15 +152,13 @@ def create_parser():
                     'if not passed, defaults are updated with any '
                     "config files in the project's root directory")
 
-    yp = parser.add_argument_group('yapf',
-                                   'Options for yapf, alternative to autopep8. '
-                                   'Currently any other options are ignored.')
-    yp.add_argument('-y', '--yapf', action='store_true',
-                    help='Use yapf rather than autopep8. '
-                    'This ignores other arguments outside of this group.')
-    yp.add_argument('--style', metavar='', default='pep8',
-                    help='style either pep8, google, name of file with style'
-                    'settings, or a dict')
+    parser.add_argument('--exclude', metavar='globs',
+                        help='exclude file/directory names that match these '
+                        'comma-separated globs')
+
+    parser.add_argument('--style', metavar='', default='pep8',
+                        help='yapf style; pep8, google, name of file with style'
+                        'settings, or a dict')
 
     return parser
 
@@ -217,21 +179,6 @@ def parse_args(arguments=None, root=None, apply_config=False):
         parser = apply_config_defaults(parser, args, root=root)
         args = parser.parse_args(arguments)
 
-    # sanity check args (from autopep8)
-    if args.max_line_length <= 0:  # pragma: no cover
-        parser.error('--max-line-length must be greater than 0')
-
-    if args.select:
-        args.select = _split_comma_separated(args.select)
-
-    if args.ignore:
-        args.ignore = _split_comma_separated(args.ignore)
-    elif not args.select and args.aggressive:
-        # Enable everything by default if aggressive.
-        args.select = ['E', 'W']
-    else:
-        args.ignore = _split_comma_separated(DEFAULT_IGNORE)
-
     if args.exclude:
         args.exclude = _split_comma_separated(args.exclude)
     else:
@@ -250,17 +197,19 @@ def apply_config_defaults(parser, args, root):
         except NotImplementedError:
             pass  # don't update local, could be using as module
 
-    config = SafeConfigParser()
-    config.read(args.global_config)
-    if root and not args.ignore_local_config:
-        config.read(local_config_files(root))
+    found_config = None
 
-    try:
-        defaults = dict((k.lstrip('-').replace('-', '_'), v)
-                        for k, v in config.items("pep8"))
-        parser.set_defaults(**defaults)
-    except NoSectionError:
-        pass  # just do nothing, potentially this could raise ?
+    if os.path.isfile(args.global_config):
+        found_config = args.global_config
+
+    if root and not args.ignore_local_config:
+        for local_config in local_config_files(root):
+            if os.path.isfile(local_config):
+                found_config = local_config
+
+    if found_config is not None:
+        parser.set_defaults(style=found_config)
+
     return parser
 
 

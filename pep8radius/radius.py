@@ -1,6 +1,5 @@
 """This module defines the Radius class, which is where the "meat" of the
-pep8radius machinery is done. The important methods are fix, fix_file and
-fix_line_range.
+pep8radius machinery is done. The important methods are fix and fix_file.
 
 The vc attribute is a subclass of VersionControl defined in the vcs
 module (provides helper methods for the different vcs e.g. git).
@@ -52,11 +51,6 @@ class Radius(object):
         self.diff = self.options.diff
         self.color = not self.options.no_color
 
-        # autopep8 specific options
-        self.options.verbose = max(0, self.options.verbose - 1)
-        self.options.in_place = False
-        self.options.diff = False
-
     def _clean_filenames(self, filenames):
         import os
         if self.options.exclude:
@@ -85,7 +79,7 @@ class Radius(object):
         from pep8radius.diff import print_diff, udiff_lines_fixed
 
         n = len(self.filenames_diff)
-        _maybe_print('Applying autopep8 to touched lines in %s file(s).' % n)
+        _maybe_print('Applying yapf to touched lines in %s file(s).' % n)
 
         any_changes = False
         total_lines_changed = 0
@@ -119,7 +113,7 @@ class Radius(object):
         return any_changes
 
     def fix_file(self, file_name):
-        """Apply autopep8 to the diff lines of a file.
+        """Apply yapf to the diff lines of a file.
 
         - Returns the diff between original and fixed file.
         - If self.in_place then this writes the the fixed code the file_name.
@@ -199,7 +193,7 @@ def fix_file(file_name, line_ranges, options=None, in_place=False,
 
 
 def fix_code(source_code, line_ranges, options=None, verbose=0):
-    '''Apply autopep8 over the line_ranges, returns the corrected code.
+    '''Apply yapf over the line_ranges, returns the corrected code.
 
     Note: though this is not checked for line_ranges should not overlap.
 
@@ -216,50 +210,10 @@ def fix_code(source_code, line_ranges, options=None, verbose=0):
         from pep8radius.main import parse_args
         options = parse_args()
 
-    if getattr(options, "yapf", False):
-        from yapf.yapflib.yapf_api import FormatCode
-        result = FormatCode(source_code, style_config=options.style, lines=line_ranges)
-        # yapf<0.3 returns diff as str, >=0.3 returns a tuple of (diff, changed)
-        return result[0] if isinstance(result, tuple) else result
-
-    line_ranges = reversed(line_ranges)
-    # Apply line fixes "up" the file (i.e. in reverse) so that
-    # fixes do not affect changes we're yet to make.
-    partial = source_code
-    for start, end in line_ranges:
-        partial = fix_line_range(partial, start, end, options)
-        _maybe_print('.', end='', max_=1, verbose=verbose)
-    _maybe_print('', max_=1, verbose=verbose)
-    fixed = partial
-    return fixed
-
-
-def fix_line_range(source_code, start, end, options):
-    """Apply autopep8 (and docformatter) between the lines start and end of
-    source."""
-    # TODO confirm behaviour outside range (indexing starts at 1)
-    start = max(start, 1)
-
-    options.line_range = [start, end]
-    from autopep8 import fix_code
-    fixed = fix_code(source_code, options)
-
-    try:
-        if options.docformatter:
-            from docformatter import format_code
-            fixed = format_code(
-                fixed,
-                summary_wrap_length=options.max_line_length - 1,
-                description_wrap_length=(options.max_line_length
-                                         - 2 * options.indent_size),
-                pre_summary_newline=options.pre_summary_newline,
-                post_description_blank=options.post_description_blank,
-                force_wrap=options.force_wrap,
-                line_range=[start, end])
-    except AttributeError:  # e.g. using autopep8.parse_args, pragma: no cover
-        pass
-
-    return fixed
+    from yapf.yapflib.yapf_api import FormatCode
+    result = FormatCode(source_code, style_config=options.style, lines=line_ranges)
+    # yapf<0.3 returns diff as str, >=0.3 returns a tuple of (diff, changed)
+    return result[0] if isinstance(result, tuple) else result
 
 
 def _maybe_print(something_to_print, end=None, min_=1, max_=99, verbose=0):

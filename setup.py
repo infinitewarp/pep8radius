@@ -29,11 +29,10 @@ def readme():
             return f.read()
 
 INSTALL_REQUIRES = (
-    ['autopep8 >= 1.0.4'] +
     (['argparse'] if version_info < (2, 7) else []) +
     ['colorama'] +
     ['docformatter >= 0.7'] +
-    (['yapf >= 0.1.5'] if version_info == (2, 7) or version_info >= (3, 4) else [])
+    ['yapf >= 0.1.5']
 )
 
 setup(
@@ -65,7 +64,7 @@ setup(
         'Topic :: Software Development :: Quality Assurance',
         'Topic :: Software Development :: Version Control',
     ],
-    keywords='automation, pep8, format, autopep8, git, hg, mercurial, bzr',
+    keywords='automation, pep8, format, yapf, git, hg, mercurial, bzr',
     install_requires=INSTALL_REQUIRES,
     packages=['pep8radius'],
     test_suite='tests',
