@@ -79,26 +79,26 @@ class MixinTests:
     """All Radius tests are placed in this class."""
 
     def test_one_line(self):
-        original = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=2; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
-        modified = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=42; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
-        expected = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        original = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=2; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        modified = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=42; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        expected = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
         self.check(original, modified, expected, 'test_one_line')
 
     def test_one_line_from_subdirectory(self):
-        original = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=2; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
-        modified = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=42; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
-        expected = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        original = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=2; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        modified = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=42; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        expected = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
         self.check(original, modified, expected, 'test_one_line',
                    cwd=SUBTEMP_DIR)
 
     def test_with_docformatter(self):
-        original = 'def poor_indenting():\n  """       Great function"""\n  a = 1\n  b = 2\n  return a + b\n\n\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=2; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
-        modified = 'def poor_indenting():\n  """  Very great function"""\n  a = 1\n  b = 2\n  return a + b\n\n\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=42; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
-        expected = 'def poor_indenting():\n  """  Very great function"""\n  a = 1\n  b = 2\n  return a + b\n\n\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        original = 'def f():\n    """       Great function"""\n    a = 1\n    b = 2\n    return a + b\n\n\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=2; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        modified = 'def f():\n    """  Very great function"""\n    a = 1\n    b = 2\n    return a + b\n\n\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=42; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        expected = 'def f():\n    """  Very great function"""\n    a = 1\n    b = 2\n    return a + b\n\n\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
         self.check(original, modified, expected, 'test_without_docformatter')
 
         raise SkipTest('TODO figure out how to integrate docformatter with yapf')
-        expected = 'def poor_indenting():\n  """Very great function."""\n  a = 1\n  b = 2\n  return a + b\n\n\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        expected = 'def f():\n    """Very great function."""\n    a = 1\n  b = 2\n    return a + b\n\n\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
         self.check(original, modified, expected,
                    'test_with_docformatter', ['--docformatter'])
 
@@ -168,9 +168,33 @@ class MixinTests:
 class TestRadiusFromDiff(TestCase):
 
     def test_from_diff(self):
+        original = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=2; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        modified = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=42; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        expected = 'def g():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        diff = get_diff(original, modified, 'foo.py')
+        with open(os.path.join(TEMP_DIR, 'foo.py'), 'w') as f:
+            f.write(modified)
+        args = parse_args(['--diff', '--no-color'])
+        r = Radius.from_diff(diff, options=args, cwd=TEMP_DIR)
+        with captured_output() as (out, err):
+            r.fix()
+        exp_diff = get_diff(modified, expected, 'foo.py')
+        self.assertEqual(out.getvalue(), exp_diff)
+
+    def test_from_diff_with_ugly_indents(self):
+        """
+        Test that lines with ugly indents are *always* reformatted.
+
+        This is necessary because yapf effectively ignores the --lines
+        argument when it comes to indentation, and it *always* fixes ugly
+        indentation for any files given to it.
+
+        See also: https://github.com/google/yapf/issues/499
+        """
+
         original = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=2; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
         modified = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na=1; b=42; c=3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
-        expected = 'def poor_indenting():\n  a = 1\n  b = 2\n  return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
+        expected = 'def poor_indenting():\n    a = 1\n    b = 2\n    return a + b\n\nfoo = 1; bar = 2; print(foo * bar)\na = 1\nb = 42\nc = 3\nd=7\n\ndef f(x = 1, y = 2):\n    return x + y\n'
         diff = get_diff(original, modified, 'foo.py')
         with open(os.path.join(TEMP_DIR, 'foo.py'), 'w') as f:
             f.write(modified)
